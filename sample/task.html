@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caesar Cipher Tool</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Use Inter as the default font */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Simple transition for UI elements */
+        .transition-all {
+            transition: all 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-2xl bg-gray-800 rounded-2xl shadow-2xl p-6 sm:p-8 space-y-6 border border-gray-700">
+        
+        <!-- Header -->
+        <div class="text-center">
+            <h1 class="text-3xl sm:text-4xl font-bold text-white">Caesar Cipher Tool</h1>
+            <p class="text-gray-400 mt-2">A simple, classic way to encrypt and decrypt messages.</p>
+        </div>
+
+        <!-- Input Message Area -->
+        <div>
+            <label for="message" class="block text-sm font-medium text-gray-300 mb-2">Your Message</label>
+            <textarea id="message" rows="5" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="Enter the text you want to transform..."></textarea>
+        </div>
+
+        <!-- Shift Value Input -->
+        <div>
+            <label for="shift" class="block text-sm font-medium text-gray-300 mb-2">Shift Value (Key)</label>
+            <input type="number" id="shift" value="3" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="Enter a number">
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4">
+            <button id="encrypt-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500">
+                Encrypt
+            </button>
+            <button id="decrypt-btn" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-gray-500">
+                Decrypt
+            </button>
+        </div>
+
+        <!-- Result Area -->
+        <div class="relative">
+            <label for="result" class="block text-sm font-medium text-gray-300 mb-2">Result</label>
+            <textarea id="result" rows="5" readonly class="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-gray-200 pr-12 cursor-not-allowed" placeholder="Your output will appear here..."></textarea>
+            <button id="copy-btn" class="absolute top-10 right-3 text-gray-400 hover:text-white transition-all" title="Copy to clipboard">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+            </button>
+            <div id="copy-feedback" class="absolute top-10 right-10 text-xs bg-green-500 text-white px-2 py-1 rounded-md opacity-0 transition-opacity">Copied!</div>
+        </div>
+    </div>
+
+    <script>
+        const messageInput = document.getElementById('message');
+        const shiftInput = document.getElementById('shift');
+        const resultTextarea = document.getElementById('result');
+        const encryptBtn = document.getElementById('encrypt-btn');
+        const decryptBtn = document.getElementById('decrypt-btn');
+        const copyBtn = document.getElementById('copy-btn');
+        const copyFeedback = document.getElementById('copy-feedback');
+
+        /**
+         * Encrypts or decrypts text using the Caesar Cipher algorithm.
+         * @param {string} text - The input string.
+         * @param {number} shift - The amount to shift letters by.
+         * @param {string} mode - "encrypt" or "decrypt".
+         * @returns {string} The transformed string.
+         */
+        function caesarCipher(text, shift, mode = "encrypt") {
+            let result = "";
+            // For decryption, we apply a negative shift.
+            if (mode === "decrypt") {
+                shift = -shift;
+            }
+
+            for (let i = 0; i < text.length; i++) {
+                let char = text[i];
+                
+                // Check if the character is an alphabet letter
+                if (/[a-zA-Z]/.test(char)) {
+                    const isUpperCase = (char === char.toUpperCase());
+                    const charCode = char.toLowerCase().charCodeAt(0);
+                    // Ensure the shift wraps around the 26 letters of the alphabet
+                    const shiftAmount = shift % 26;
+
+                    let newCharCode = charCode + shiftAmount;
+                    
+                    // Handle wrapping for letters that go past 'z' or before 'a'
+                    if (newCharCode > 'z'.charCodeAt(0)) {
+                        newCharCode -= 26;
+                    } else if (newCharCode < 'a'.charCodeAt(0)) {
+                        newCharCode += 26;
+                    }
+
+                    let newChar = String.fromCharCode(newCharCode);
+                    
+                    // Preserve the original case
+                    result += isUpperCase ? newChar.toUpperCase() : newChar;
+                } else {
+                    // If not a letter, keep the character as is
+                    result += char;
+                }
+            }
+            return result;
+        }
+
+        // Event listener for the Encrypt button
+        encryptBtn.addEventListener('click', () => {
+            const message = messageInput.value;
+            const shift = parseInt(shiftInput.value, 10);
+            if (!isNaN(shift)) {
+                resultTextarea.value = caesarCipher(message, shift, 'encrypt');
+            } else {
+                resultTextarea.value = "Error: Please enter a valid shift number.";
+            }
+        });
+        
+        // Event listener for the Decrypt button
+        decryptBtn.addEventListener('click', () => {
+            const message = messageInput.value;
+            const shift = parseInt(shiftInput.value, 10);
+             if (!isNaN(shift)) {
+                resultTextarea.value = caesarCipher(message, shift, 'decrypt');
+            } else {
+                resultTextarea.value = "Error: Please enter a valid shift number.";
+            }
+        });
+
+        // Event listener for the Copy button
+        copyBtn.addEventListener('click', () => {
+            if (resultTextarea.value) {
+                // We use this method for better compatibility within iframes
+                resultTextarea.select();
+                document.execCommand('copy');
+                
+                // Show feedback message
+                copyFeedback.style.opacity = '1';
+                setTimeout(() => {
+                    copyFeedback.style.opacity = '0';
+                }, 2000);
+            }
+        });
+
+    </script>
+</body>
+</html>
