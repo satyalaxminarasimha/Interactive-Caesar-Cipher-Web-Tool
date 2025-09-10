@@ -1,0 +1,37 @@
+from PIL import Image
+import numpy as np
+
+def encrypt_image(input_path, output_path, key):
+    img = Image.open(input_path)
+    img_array = np.array(img)
+    
+    # Encrypt by modifying pixel values using a simple transformation
+    encrypted_array = (img_array + key) % 256  # Keep values within valid range
+    
+    encrypted_img = Image.fromarray(encrypted_array.astype(np.uint8))
+    encrypted_img.save(output_path)
+    print(f"Image encrypted and saved as {output_path}")
+
+def decrypt_image(input_path, output_path, key):
+    img = Image.open(input_path)
+    img_array = np.array(img)
+    
+    # Decrypt by reversing the transformation
+    decrypted_array = (img_array - key) % 256
+    
+    decrypted_img = Image.fromarray(decrypted_array.astype(np.uint8))
+    decrypted_img.save(output_path)
+    print(f"Image decrypted and saved as {output_path}")
+
+# Example usage
+operation = input("Enter 'encrypt' or 'decrypt': ").strip().lower()
+input_file = input("Enter input image path: ")
+output_file = input("Enter output image path: ")
+key = int(input("Enter encryption key (integer): "))
+
+if operation == "encrypt":
+    encrypt_image(input_file, output_file, key)
+elif operation == "decrypt":
+    decrypt_image(input_file, output_file, key)
+else:
+    print("Invalid operation selected.")
